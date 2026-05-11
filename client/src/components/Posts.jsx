@@ -7,15 +7,13 @@ function Posts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // --- States לניהול התצוגה ---
-  const [viewMode, setViewMode] = useState('my'); // 'my' או 'all'
+  const [viewMode, setViewMode] = useState('my'); 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCriterion, setSearchCriterion] = useState('title');
   const [selectedPost, setSelectedPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
 
-  // שליפת המשתמש המחובר מה-Local Storage [cite: 36]
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   useEffect(() => {
@@ -34,8 +32,6 @@ function Posts() {
       setLoading(false);
     }
   };
-
-  // --- פונקציות ניהול (CRUD) [cite: 71] ---
 
   const handleAddPost = async () => {
     const title = prompt("הזיני כותרת לפוסט החדש:");
@@ -71,7 +67,7 @@ function Posts() {
     }
   };
 
-  // --- ניהול תגובות (Comments) [cite: 73, 74, 75] ---
+  // --- ניהול תגובות (Comments) ---
 
   const fetchComments = async (postId) => {
     try {
@@ -85,7 +81,6 @@ function Posts() {
     const commentText = prompt("הזיני את התגובה שלך:");
     if (commentText && currentUser) {
       try {
-        // חישוב ID עוקב כפי שביקש המרצה
         const allCommentsRes = await api.get('/comments');
         const maxId = allCommentsRes.data.length > 0 
           ? Math.max(...allCommentsRes.data.map(c => Number(c.id))) 
@@ -104,6 +99,27 @@ function Posts() {
     }
   };
 
+  // פונקציית מחיקת תגובה שחזרה לקוד
+  const handleDeleteComment = async (commentId) => {
+    if (window.confirm("למחוק את התגובה שלך?")) {
+      try {
+        await api.delete(`/comments/${commentId}`);
+        setComments(comments.filter(c => c.id !== commentId));
+      } catch (error) { console.error(error); }
+    }
+  };
+
+  // פונקציית עדכון תגובה שחזרה לקוד
+  const handleUpdateComment = async (comment) => {
+    const newBody = prompt("עדכני את התגובה שלך:", comment.body);
+    if (newBody && newBody !== comment.body) {
+      try {
+        const response = await api.patch(`/comments/${comment.id}`, { body: newBody });
+        setComments(comments.map(c => c.id === comment.id ? { ...c, body: response.data.body } : p));
+      } catch (error) { console.error(error); }
+    }
+  };
+
   const filteredPosts = posts.filter(post => {
     if (searchCriterion === 'id') return post.id.toString().includes(searchQuery);
     return post.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -115,7 +131,6 @@ function Posts() {
 
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {/* כפתורי מעבר בין תצוגות */}
           <button className={`btn ${viewMode === 'my' ? '' : 'btn-secondary'}`} onClick={() => setViewMode('my')}>My Posts</button>
           <button className={`btn ${viewMode === 'all' ? '' : 'btn-secondary'}`} onClick={() => setViewMode('all')}>All Posts</button>
         </div>
@@ -171,12 +186,26 @@ function Posts() {
                           + Add Comment
                         </button>
                       </div>
-                      {comments.map(comment => (
-                        <div key={comment.id} style={{ fontSize: '0.9rem', marginBottom: '10px', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-                          <strong style={{ color: comment.email === currentUser?.email ? '#60a5fa' : '#94a3b8' }}>{comment.email}</strong>
-                          <div style={{ marginTop: '5px' }}>{comment.body}</div>
-                        </div>
-                      ))}
+                      {comments.map(comment => {
+                        // בדיקה האם זו תגובה שלך
+                        const isMyComment = currentUser && comment.email === currentUser.email;
+                        return (
+                          <div key={comment.id} style={{ fontSize: '0.9rem', marginBottom: '10px', padding: '10px', background: isMyComment ? 'rgba(96,165,250,0.1)' : 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <strong style={{ color: isMyComment ? '#60a5fa' : '#94a3b8' }}>{comment.email}</strong>
+                              
+                              {/* לחצני עריכה ומחיקה יופיעו רק לתגובות שלך */}
+                              {isMyComment && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <span onClick={() => handleUpdateComment(comment)} style={{ cursor: 'pointer', color: '#60a5fa', fontSize: '0.8rem' }}>Edit</span>
+                                  <span onClick={() => handleDeleteComment(comment.id)} style={{ cursor: 'pointer', color: '#f87171', fontSize: '0.8rem' }}>Delete</span>
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ marginTop: '5px' }}>{comment.body}</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
