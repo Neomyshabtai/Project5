@@ -15,7 +15,8 @@ export default function Albums() {
 
   const fetchAlbums = async () => {
     try {
-      const response = await api.get(`/users/${userId}/albums`);
+      // שינינו את ה-URL לסינון ישיר של אלבומים לפי ה-userId
+      const response = await api.get(`/albums?userId=${userId}`);
       setAlbums(response.data);
     } catch (err) {
       console.error('Error fetching albums:', err);

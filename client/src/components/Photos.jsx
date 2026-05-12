@@ -20,10 +20,13 @@ export default function Photos() {
     fetchPhotos(1);
   }, [albumId]);
 
-  const fetchPhotos = async (pageNumber) => {
+ const fetchPhotos = async (pageNumber) => {
     try {
-      const response = await api.get(`/albums/${albumId}/photos?_page=${pageNumber}&_limit=${limit}`);
-      const newPhotos = response.data;
+      // עדכון ל-_per_page במקום _limit כדי שיתאים לגרסה החדשה של השרת
+      const response = await api.get(`/photos?albumId=${albumId}&_page=${pageNumber}&_per_page=${limit}`);
+      
+      // החלק הקריטי: שליפת המערך מתוך האובייקט (אם השרת עטף אותו) או שימוש בו ישירות
+      const newPhotos = response.data.data ? response.data.data : response.data;
       
       if (pageNumber === 1) {
         setPhotos(newPhotos);
@@ -31,7 +34,7 @@ export default function Photos() {
         setPhotos(prev => [...prev, ...newPhotos]);
       }
       
-      // If we got fewer photos than the limit, there are no more photos to load
+      // אם קיבלנו פחות מהמגבלה, סימן שאין עוד תמונות לטעון
       if (newPhotos.length < limit) {
         setHasMore(false);
       }
