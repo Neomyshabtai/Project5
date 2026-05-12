@@ -22,8 +22,10 @@ export default function Photos() {
 
   const fetchPhotos = async (pageNumber) => {
     try {
-      const response = await api.get(`/albums/${albumId}/photos?_page=${pageNumber}&_limit=${limit}`);
-      const newPhotos = response.data;
+      const response = await api.get(`/photos?albumId=${albumId}&_page=${pageNumber}&_per_page=${limit}`);
+      
+      // json-server v1 pagination returns an object with a 'data' array property
+      const newPhotos = response.data.data || response.data;
       
       if (pageNumber === 1) {
         setPhotos(newPhotos);
@@ -56,7 +58,7 @@ export default function Photos() {
       const imageUrl = `/images/food${randomImageIndex}.jpg`;
 
       const response = await api.post('/photos', {
-        albumId: parseInt(albumId),
+        albumId: albumId,
         title: newPhotoTitle,
         url: imageUrl,
         thumbnailUrl: imageUrl

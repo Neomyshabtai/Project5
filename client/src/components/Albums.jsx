@@ -15,7 +15,7 @@ export default function Albums() {
 
   const fetchAlbums = async () => {
     try {
-      const response = await api.get(`/users/${userId}/albums`);
+      const response = await api.get(`/albums?userId=${userId}`);
       setAlbums(response.data);
     } catch (err) {
       console.error('Error fetching albums:', err);
@@ -28,7 +28,7 @@ export default function Albums() {
 
     try {
       const response = await api.post('/albums', {
-        userId: parseInt(userId),
+        userId: userId,
         title: newAlbumTitle
       });
       setAlbums([...albums, response.data]);

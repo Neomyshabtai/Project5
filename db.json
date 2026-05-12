@@ -77,6 +77,42 @@
       "address": {},
       "company": {},
       "id": "ii_U2ehiDfU"
+    },
+    {
+      "name": "רותיגולד",
+      "username": "רותי",
+      "email": "rut@walla.com",
+      "website": "duks",
+      "address": {},
+      "company": {},
+      "id": "xsgncXAGZ9o"
+    },
+    {
+      "name": "רותיגולד",
+      "username": "רותיגולד",
+      "email": "rut@walla.com",
+      "website": "1234",
+      "address": {},
+      "company": {},
+      "id": "-Pa9C_TpImg"
+    },
+    {
+      "name": "rut",
+      "username": "rut",
+      "email": "admin@gmail.com",
+      "website": "9999",
+      "address": {},
+      "company": {},
+      "id": "fXPTu2_rkf0"
+    },
+    {
+      "name": "peary",
+      "username": "peary",
+      "email": "peary@gmail.com",
+      "website": "1234",
+      "address": {},
+      "company": {},
+      "id": "8oYXD4LBWII"
     }
   ],
   "posts": [
@@ -268,15 +304,27 @@
     },
     {
       "userId": 1,
-      "id": "N84FniaDrbc",
-      "title": "PPPPP",
-      "body": "P"
-    },
-    {
-      "userId": 1,
       "title": "FFF",
       "body": "F",
       "id": "xVM5xzhUfi8"
+    },
+    {
+      "userId": "8oYXD4LBWII",
+      "title": "lunch",
+      "body": "eat heakth and balanced",
+      "id": "k6reImckzBU"
+    },
+    {
+      "userId": "8oYXD4LBWII",
+      "title": "eaat all colors",
+      "body": "scientist says its healthy to include all colors at your meal",
+      "id": "iquFbbR7oQY"
+    },
+    {
+      "userId": "1",
+      "title": "הי",
+      "body": "מה אוכלים",
+      "id": "U9NOkpcvsNc"
     }
   ],
   "comments": [
@@ -1864,6 +1912,36 @@
       "userId": 3,
       "id": "30",
       "title": "tempora assumenda et similique odit distinctio error"
+    },
+    {
+      "userId": null,
+      "title": "nature",
+      "id": "FgojlOQAc2E"
+    },
+    {
+      "userId": null,
+      "title": "ארוחות",
+      "id": "T9hRVpUDfPk"
+    },
+    {
+      "userId": "xsgncXAGZ9o",
+      "title": "ארוחות",
+      "id": "YHB1SWrL3ss"
+    },
+    {
+      "userId": "-Pa9C_TpImg",
+      "title": "meals",
+      "id": "i8N_wdL6puA"
+    },
+    {
+      "userId": "fXPTu2_rkf0",
+      "title": "meals",
+      "id": "HQ5E1_DVxwo"
+    },
+    {
+      "userId": "8oYXD4LBWII",
+      "title": "meals",
+      "id": "f3xq9CiqItI"
     }
   ],
   "photos": [
@@ -12366,6 +12444,62 @@
       "title": "sunt est amet ut",
       "url": "/images/food1.jpg",
       "thumbnailUrl": "/images/food1.jpg"
+    },
+    {
+      "albumId": null,
+      "title": "נוף יפה",
+      "url": "/images/food18.jpg",
+      "thumbnailUrl": "/images/food18.jpg",
+      "id": "c68U1vZouUI"
+    },
+    {
+      "albumId": null,
+      "title": "ארוחת בוקר",
+      "url": "/images/food20.jpg",
+      "thumbnailUrl": "/images/food20.jpg",
+      "id": "bQz3CbzByu0"
+    },
+    {
+      "albumId": null,
+      "title": "ארוחת צהריים",
+      "url": "/images/food11.jpg",
+      "thumbnailUrl": "/images/food11.jpg",
+      "id": "ZS6M-ippqo4"
+    },
+    {
+      "albumId": "YHB1SWrL3ss",
+      "title": "ארוחת צהריים",
+      "url": "/images/food18.jpg",
+      "thumbnailUrl": "/images/food18.jpg",
+      "id": "ECegi_I2ryI"
+    },
+    {
+      "albumId": "YHB1SWrL3ss",
+      "title": "ארוחת ערב ",
+      "url": "/images/food11.jpg",
+      "thumbnailUrl": "/images/food11.jpg",
+      "id": "Fd5ov5eHyE0"
+    },
+    {
+      "albumId": "f3xq9CiqItI",
+      "title": "dinner",
+      "url": "/images/food14.jpg",
+      "thumbnailUrl": "/images/food14.jpg",
+      "id": "36k1DInfUZ0"
+    },
+    {
+      "albumId": "f3xq9CiqItI",
+      "title": "lunch",
+      "url": "/images/food14.jpg",
+      "thumbnailUrl": "/images/food14.jpg",
+      "id": "HzYUj3EVeek"
+    },
+    {
+      "albumId": "f3xq9CiqItI",
+      "title": "brakfast",
+      "url": "/images/food4.jpg",
+      "thumbnailUrl": "/images/food4.jpg",
+      "id": "Iy6BaPmvdfw"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
