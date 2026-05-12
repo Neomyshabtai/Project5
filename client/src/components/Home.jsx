@@ -8,23 +8,12 @@ export default function Home() {
   const { userId } = useParams();
 
   useEffect(() => {
-    // Check authentication
+    // The ProtectedRoute already ensures we have a valid currentUser matching the userId
     const storedUser = localStorage.getItem('currentUser');
-    if (!storedUser) {
-      navigate('/login');
-      return;
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
-
-    const parsedUser = JSON.parse(storedUser);
-    
-    // Security check: ensure user is accessing their own home page
-    if (parsedUser.id.toString() !== userId) {
-      navigate(`/users/${parsedUser.id}/home`);
-      return;
-    }
-
-    setUser(parsedUser);
-  }, [navigate, userId]);
+  }, [userId]);
 
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
