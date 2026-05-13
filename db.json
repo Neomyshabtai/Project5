@@ -325,6 +325,18 @@
       "title": "הי",
       "body": "מה אוכלים",
       "id": "U9NOkpcvsNc"
+    },
+    {
+      "userId": 1,
+      "title": "וווו",
+      "body": "ןןןןןןןןןןןןן",
+      "id": "Ph-7rDD_bfY"
+    },
+    {
+      "userId": 1,
+      "title": "hhhhh",
+      "body": "hhhhhhh",
+      "id": "oiOM0gB7Z_c"
     }
   ],
   "comments": [
@@ -1942,6 +1954,11 @@
       "userId": "8oYXD4LBWII",
       "title": "meals",
       "id": "f3xq9CiqItI"
+    },
+    {
+      "userId": "1",
+      "title": "טיול",
+      "id": "M9X34-If-kc"
     }
   ],
   "photos": [
@@ -12500,6 +12517,13 @@
       "url": "/images/food4.jpg",
       "thumbnailUrl": "/images/food4.jpg",
       "id": "Iy6BaPmvdfw"
+    },
+    {
+      "albumId": "M9X34-If-kc",
+      "title": "food1",
+      "url": "/images/food9.jpg",
+      "thumbnailUrl": "/images/food9.jpg",
+      "id": "Cnogejzn-aI"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

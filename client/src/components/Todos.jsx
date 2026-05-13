@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 
 function Todos() {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,8 +19,17 @@ function Todos() {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
 
-  // 1. Fetch Todos (Read)
+  // שומר הנתיב: בדיקה אם יש משתמש מחובר
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  // 1. Fetch Todos (Read) + Route Guard
   useEffect(() => {
+    // מוקש "חזור אחורה" מטופל כאן
+    if (!currentUser) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     const fetchTodos = async () => {
       try {
         const response = await api.get(`/todos?userId=${userId}`);
@@ -31,7 +41,7 @@ function Todos() {
       }
     };
     fetchTodos();
-  }, [userId]);
+  }, [userId, navigate]);
 
   // 2. Add Todo (Create)
   const handleAddTodo = async (e) => {
@@ -40,11 +50,11 @@ function Todos() {
 
     try {
       const response = await api.post('/todos', {
-        userId: Number(userId), // שומרים את השיוך למשתמש
+        userId: Number(userId),
         title: newTodoTitle,
         completed: false
       });
-      // מעדכנים את הרשימה המקומית בלי קריאת שרת נוספת!
+      // עדכון State מקומי למניעת Fetch כפול
       setTodos([...todos, response.data]); 
       setNewTodoTitle('');
     } catch (error) {
@@ -76,7 +86,7 @@ function Todos() {
       setTodos(todos.map(todo => 
         todo.id === todoId ? { ...todo, title: response.data.title } : todo
       ));
-      setEditingId(null); // יוצאים ממצב עריכה
+      setEditingId(null);
     } catch (error) {
       console.error("שגיאה בעדכון התוכן:", error);
     }
@@ -84,11 +94,13 @@ function Todos() {
 
   // 5. Delete Todo (Delete)
   const handleDeleteTodo = async (todoId) => {
-    try {
-      await api.delete(`/todos/${todoId}`);
-      setTodos(todos.filter(todo => todo.id !== todoId));
-    } catch (error) {
-      console.error("שגיאה במחיקת מטלה:", error);
+    if (window.confirm("למחוק את המטלה?")) {
+      try {
+        await api.delete(`/todos/${todoId}`);
+        setTodos(todos.filter(todo => todo.id !== todoId));
+      } catch (error) {
+        console.error("שגיאה במחיקת מטלה:", error);
+      }
     }
   };
 
@@ -123,20 +135,20 @@ function Todos() {
     <div className="container glass-panel animate-fade-in" style={{ padding: '20px', color: 'white', maxWidth: '800px', margin: '0 auto' }}>
       <h1>My Todos (User ID: {userId})</h1>
       
-      {/* --- Add New Todo Form --- */}
-      <form onSubmit={handleAddTodo} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      <form onSubmit={handleAddTodo} style={{ display: 'flex', gap: '15px', marginBottom: '30px', width: '100%' }}>
         <input 
           type="text" 
-          placeholder="What needs to be done?" 
+          placeholder="Type a new task here..." 
           value={newTodoTitle}
           onChange={(e) => setNewTodoTitle(e.target.value)}
           className="form-input"
-          style={{ flex: 1, marginBottom: 0 }}
+          style={{ flex: '1', padding: '15px', fontSize: '1.2rem', marginBottom: 0, borderRadius: '8px' }}
         />
-        <button type="submit" className="btn" style={{ margin: 0 }}>Add Todo</button>
+        <button type="submit" className="btn" style={{ flex: '0 0 auto', width: 'auto', padding: '0 20px', fontSize: '1.1rem', margin: 0, borderRadius: '8px' }}>
+          Add Todo
+        </button>
       </form>
 
-      {/* --- Toolbar: Search, Filter, Sort --- */}
       <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '20px', background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '5px', flex: '1 1 auto' }}>
           <select value={searchCriterion} onChange={(e) => setSearchCriterion(e.target.value)} className="form-input" style={{ width: 'auto', marginBottom: 0 }}>
@@ -165,16 +177,14 @@ function Todos() {
         </select>
       </div>
 
-      {/* --- Task List --- */}
       {loading ? (
         <p>טוען נתונים מהשרת...</p>
       ) : processedTodos.length > 0 ? (
         <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left' }}>
           {processedTodos.map(todo => (
-            <li key={todo.id} style={{ marginBottom: '10px', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s ease-in-out' }}>
+            <li key={todo.id} style={{ marginBottom: '10px', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               
               <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                {/* Checkbox is now interactive */}
                 <input 
                   type="checkbox" 
                   checked={todo.completed} 
@@ -182,19 +192,18 @@ function Todos() {
                   style={{ transform: 'scale(1.2)', cursor: 'pointer' }} 
                 />
                 
-                {/* Editing Mode vs View Mode */}
                 {editingId === todo.id ? (
-                  <div style={{ display: 'flex', marginLeft: '15px', flex: 1, gap: '10px' }}>
+                  <div style={{ display: 'flex', marginLeft: '15px', flex: 1, gap: '8px', alignItems: 'center', width: '100%' }}>
                     <input 
                       type="text" 
                       value={editTitle} 
                       onChange={(e) => setEditTitle(e.target.value)} 
                       className="form-input"
-                      style={{ marginBottom: 0, flex: 1, padding: '5px' }}
+                      style={{ marginBottom: 0, flex: '1 1 100%', width: '100%', padding: '8px 12px', borderRadius: '4px' }}
                       autoFocus
                     />
-                    <button onClick={() => handleSaveEdit(todo.id)} className="btn" style={{ padding: '5px 10px', fontSize: '0.9rem', margin: 0 }}>Save</button>
-                    <button onClick={() => setEditingId(null)} className="btn" style={{ padding: '5px 10px', fontSize: '0.9rem', margin: 0, background: '#64748b' }}>Cancel</button>
+                    <button onClick={() => handleSaveEdit(todo.id)} className="btn" style={{ flex: '0 0 auto', width: 'auto', padding: '6px 12px', fontSize: '0.9rem', margin: 0 }}>Save</button>
+                    <button onClick={() => setEditingId(null)} className="btn" style={{ flex: '0 0 auto', width: 'auto', padding: '6px 12px', fontSize: '0.9rem', margin: 0, background: '#64748b' }}>Cancel</button>
                   </div>
                 ) : (
                   <span style={{ marginLeft: '15px', fontSize: '1.1rem', textDecoration: todo.completed ? 'line-through' : 'none', opacity: todo.completed ? 0.6 : 1 }}>
@@ -204,19 +213,10 @@ function Todos() {
                 )}
               </div>
 
-              {/* Action Buttons (Edit & Delete) */}
               {editingId !== todo.id && (
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    onClick={() => { setEditingId(todo.id); setEditTitle(todo.title); }} 
-                    style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', fontSize: '1rem' }}>
-                    Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteTodo(todo.id)} 
-                    style={{ background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer', fontSize: '1rem' }}>
-                    Delete
-                  </button>
+                  <button onClick={() => { setEditingId(todo.id); setEditTitle(todo.title); }} style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer' }}>Edit</button>
+                  <button onClick={() => handleDeleteTodo(todo.id)} style={{ background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer' }}>Delete</button>
                 </div>
               )}
             </li>

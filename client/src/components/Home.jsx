@@ -8,19 +8,35 @@ export default function Home() {
   const { userId } = useParams();
 
   useEffect(() => {
-    // The ProtectedRoute already ensures we have a valid currentUser matching the userId
     const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    
+    // בדיקה בסיסית: האם יש מישהו מחובר?
+    if (!storedUser) {
+      navigate('/login', { replace: true });
+      return;
     }
-  }, [userId]);
+
+    const parsedUser = JSON.parse(storedUser);
+
+    // בדיקת אבטחה: האם ה-ID ב-URL תואם למשתמש בזיכרון?
+    // משתמשים ב- == כדי להשוות מספר למחרוזת בלי בעיות טיפוסים
+    if (parsedUser.id != userId) {
+      navigate(`/users/${parsedUser.id}/home`, { replace: true });
+      return;
+    }
+
+    setUser(parsedUser);
+  }, [userId, navigate]);
+
+  // אם המשתמש עוד לא נטען ב-State, נציג טעינה קלה אבל לא נשבור את המבנה
+  if (!user) {
+    return <div className="container" style={{color: 'white', textAlign: 'center', paddingTop: '50px'}}>Loading...</div>;
+  }
 
   const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    navigate('/login');
+    localStorage.clear();
+    navigate('/login', { replace: true });
   };
-
-  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="container animate-fade-in">
@@ -58,16 +74,12 @@ export default function Home() {
             <div className="info-grid">
               <div className="info-label">Name:</div>
               <div>{user.name}</div>
-              
               <div className="info-label">Username:</div>
               <div>{user.username}</div>
-              
               <div className="info-label">Email:</div>
               <div>{user.email}</div>
-              
               <div className="info-label">Phone:</div>
               <div>{user.phone || 'N/A'}</div>
-              
               <div className="info-label">Website:</div>
               <div>{user.website}</div>
             </div>

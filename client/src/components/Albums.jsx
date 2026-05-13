@@ -9,9 +9,16 @@ export default function Albums() {
   const [search, setSearch] = useState('');
   const [newAlbumTitle, setNewAlbumTitle] = useState('');
 
+  //  שולפים את המשתמש הנוכחי כדי לוודא התחברות
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
   useEffect(() => {
+    if (!currentUser) {
+      navigate('/login', { replace: true });
+      return;
+    }
     fetchAlbums();
-  }, [userId]);
+  }, [userId, navigate]);
 
   const fetchAlbums = async () => {
     try {
@@ -28,13 +35,33 @@ export default function Albums() {
 
     try {
       const response = await api.post('/albums', {
-        userId: userId,
+        userId: Number(userId),
         title: newAlbumTitle
       });
+      // מונעים Fetch כפול
       setAlbums([...albums, response.data]);
       setNewAlbumTitle('');
     } catch (err) {
       console.error('Error creating album:', err);
+    }
+  };
+
+  const handleDeleteAlbum = async (albumId) => {
+    if (window.confirm("בטוח שברצונך למחוק את האלבום? (פעולה זו תמחק גם את כל התמונות שבתוכו!)")) {
+      try {
+        const photosRes = await api.get(`/photos?albumId=${albumId}`);
+        const photosToDelete = photosRes.data;
+
+        for (let photo of photosToDelete) {
+          await api.delete(`/photos/${photo.id}`);
+        }
+
+        await api.delete(`/albums/${albumId}`);
+        
+        setAlbums(albums.filter(album => album.id !== albumId));
+      } catch (error) {
+        console.error("Error deleting album and photos:", error);
+      }
     }
   };
 
@@ -71,7 +98,7 @@ export default function Albums() {
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
           <h2>Albums Directory</h2>
           <input
             type="text"
@@ -79,26 +106,38 @@ export default function Albums() {
             placeholder="Search by ID or Title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: '300px' }}
+            style={{ width: '300px', marginBottom: 0 }}
           />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {filteredAlbums.map(album => (
-            <Link 
-              to={`/users/${userId}/albums/${album.id}/photos`} 
+            <div 
               key={album.id}
               className="glass-panel"
-              style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s', textDecoration: 'none', color: 'inherit' }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }}
             >
-              <div>
+              <Link 
+                to={`/users/${userId}/albums/${album.id}/photos`} 
+                style={{ textDecoration: 'none', color: 'inherit', flex: 1, display: 'flex', alignItems: 'center' }}
+              >
                 <span style={{ color: '#818cf8', fontWeight: 'bold', marginRight: '1rem' }}>#{album.id}</span>
                 <span style={{ fontSize: '1.2rem' }}>{album.title}</span>
+              </Link>
+              
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                <Link to={`/users/${userId}/albums/${album.id}/photos`} style={{ color: '#94a3b8', textDecoration: 'none' }}>
+                  View Photos &rarr;
+                </Link>
+                <button 
+                  className="btn btn-danger" 
+                  style={{ padding: '8px 16px', margin: 0, fontSize: '0.9rem' }} 
+                  onClick={() => handleDeleteAlbum(album.id)}
+                >
+                  Delete
+                </button>
               </div>
-              <span style={{ color: '#94a3b8' }}>View Photos &rarr;</span>
-            </Link>
+            </div>
           ))}
           {filteredAlbums.length === 0 && <p style={{ color: '#94a3b8' }}>No albums found.</p>}
         </div>

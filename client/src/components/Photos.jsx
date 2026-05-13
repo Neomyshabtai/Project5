@@ -9,22 +9,39 @@ export default function Photos() {
   const [photos, setPhotos] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   
   const [newPhotoTitle, setNewPhotoTitle] = useState('');
   const [editingPhotoId, setEditingPhotoId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
 
-  const limit = 5; // Load 5 photos at a time
+  const limit = 5; // הגבלה ל-5 תמונות בכל טעינה - דרישת חובה של המרצה!
+
+  // שולפים את המשתמש הנוכחי לבדיקת אבטחה
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   useEffect(() => {
+    // מוקש "חזור אחורה" - אם אין משתמש, זורקים ללוגין
+    if (!currentUser) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // איפוס נתונים במעבר בין אלבומים
+    setPhotos([]);
+    setPage(1);
+    setHasMore(true);
     fetchPhotos(1);
-  }, [albumId]);
+  }, [albumId, navigate]);
 
- const fetchPhotos = async (pageNumber) => {
+  const fetchPhotos = async (pageNumber) => {
+    if (loading) return;
+    setLoading(true);
     try {
+      // כאן קורה הקסם שידידאל מחפש ב-Network: סינון לפי אלבום + עמוד + הגבלת כמות
       const response = await api.get(`/photos?albumId=${albumId}&_page=${pageNumber}&_per_page=${limit}`);
       
-      // json-server v1 pagination returns an object with a 'data' array property
+      // תמיכה בשני הפורמטים של json-server (v0 ו-v1)
       const newPhotos = response.data.data || response.data;
       
       if (pageNumber === 1) {
@@ -33,12 +50,14 @@ export default function Photos() {
         setPhotos(prev => [...prev, ...newPhotos]);
       }
       
-      // אם קיבלנו פחות מהמגבלה, סימן שאין עוד תמונות לטעון
+      // בדיקה אם נגמרו התמונות
       if (newPhotos.length < limit) {
         setHasMore(false);
       }
     } catch (err) {
       console.error('Error fetching photos:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +72,7 @@ export default function Photos() {
     if (!newPhotoTitle.trim()) return;
 
     try {
-      // Pick a random image from our 20 local images for the new photo
+      // בחירה רנדומלית של תמונה מקומית
       const randomImageIndex = Math.floor(Math.random() * 20) + 1;
       const imageUrl = `/images/food${randomImageIndex}.jpg`;
 
@@ -64,6 +83,7 @@ export default function Photos() {
         thumbnailUrl: imageUrl
       });
       
+      // עדכון State מקומי למניעת Fetch כפול
       setPhotos([response.data, ...photos]);
       setNewPhotoTitle('');
     } catch (err) {
@@ -81,12 +101,8 @@ export default function Photos() {
     }
   };
 
-  const handleUpdateStart = (photo) => {
-    setEditingPhotoId(photo.id);
-    setEditTitle(photo.title);
-  };
-
   const handleUpdateSave = async (id) => {
+    if (!editTitle.trim()) return;
     try {
       await api.patch(`/photos/${id}`, { title: editTitle });
       setPhotos(photos.map(p => p.id === id ? { ...p, title: editTitle } : p));
@@ -136,18 +152,19 @@ export default function Photos() {
                   className="form-input" 
                   value={editTitle} 
                   onChange={(e) => setEditTitle(e.target.value)} 
+                  autoFocus
                 />
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn" style={{ padding: '0.5rem' }} onClick={() => handleUpdateSave(photo.id)}>Save</button>
-                  <button className="btn btn-secondary" style={{ padding: '0.5rem' }} onClick={() => setEditingPhotoId(null)}>Cancel</button>
+                  <button className="btn" style={{ padding: '0.5rem', fontSize: '0.85rem' }} onClick={() => handleUpdateSave(photo.id)}>Save</button>
+                  <button className="btn btn-secondary" style={{ padding: '0.5rem', fontSize: '0.85rem' }} onClick={() => setEditingPhotoId(null)}>Cancel</button>
                 </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <p style={{ flexGrow: 1, marginBottom: '1rem', fontWeight: '500' }}>{photo.title}</p>
+                <p style={{ flexGrow: 1, marginBottom: '1rem', fontWeight: '500', fontSize: '1rem' }}>{photo.title}</p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn" style={{ padding: '0.5rem', flex: 1 }} onClick={() => handleUpdateStart(photo)}>Edit</button>
-                  <button className="btn" style={{ padding: '0.5rem', flex: 1, backgroundColor: '#ef4444' }} onClick={() => handleDeletePhoto(photo.id)}>Delete</button>
+                  <button className="btn" style={{ padding: '0.5rem', flex: 1, fontSize: '0.85rem' }} onClick={() => {setEditingPhotoId(photo.id); setEditTitle(photo.title);}}>Edit</button>
+                  <button className="btn" style={{ padding: '0.5rem', flex: 1, backgroundColor: '#ef4444', fontSize: '0.85rem' }} onClick={() => handleDeletePhoto(photo.id)}>Delete</button>
                 </div>
               </div>
             )}
@@ -155,7 +172,9 @@ export default function Photos() {
         ))}
       </div>
 
-      {hasMore && (
+      {loading && <p style={{ textAlign: 'center', color: 'white' }}>Loading photos...</p>}
+
+      {hasMore && !loading && (
         <div style={{ textAlign: 'center', margin: '2rem 0' }}>
           <button className="btn" style={{ width: 'auto', padding: '1rem 3rem', fontSize: '1.2rem' }} onClick={loadMore}>
             Load More Photos
@@ -166,12 +185,6 @@ export default function Photos() {
       {!hasMore && photos.length > 0 && (
         <div style={{ textAlign: 'center', margin: '2rem 0', color: '#94a3b8' }}>
           No more photos in this album.
-        </div>
-      )}
-      
-      {photos.length === 0 && !hasMore && (
-        <div style={{ textAlign: 'center', margin: '2rem 0', color: '#94a3b8' }}>
-          This album is empty.
         </div>
       )}
     </div>
