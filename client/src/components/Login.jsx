@@ -13,12 +13,12 @@ export default function Login() {
     setError('');
 
     try {
-      // Fetch users to verify credentials
-      const response = await api.get('/users');
+      // Fetch only the specific user by username to improve performance and security
+      const response = await api.get(`/users?username=${username}`);
       const users = response.data;
 
       // According to assignment: username = username, password = website
-      const user = users.find(u => u.username === username);
+      const user = users.length > 0 ? users[0] : null;
 
       if (user && user.website === password) {
         // Successful login

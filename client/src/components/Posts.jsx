@@ -38,7 +38,7 @@ function Posts() {
     const body = prompt("הזיני את תוכן הפוסט:");
     if (title && body) {
       try {
-        const newPost = { userId: Number(userId), title, body };
+        const newPost = { userId: userId, title, body };
         const response = await api.post('/posts', newPost);
         if (viewMode === 'my' || viewMode === 'all') setPosts([response.data, ...posts]);
         alert("הפוסט נוסף בהצלחה!");
@@ -170,7 +170,7 @@ function Posts() {
                     <button className="btn btn-secondary" onClick={() => fetchComments(post.id)}>
                       {showComments ? 'Hide Comments' : 'Show Comments'}
                     </button>
-                    {post.userId === Number(userId) && (
+                    {String(post.userId) === String(userId) && (
                       <>
                         <button className="btn btn-secondary" onClick={() => handleUpdatePost(post)}>Edit</button>
                         <button className="btn btn-danger" onClick={() => handleDeletePost(post.id)}>Delete</button>

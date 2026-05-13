@@ -15,7 +15,6 @@ export default function Albums() {
 
   const fetchAlbums = async () => {
     try {
-      // שינינו את ה-URL לסינון ישיר של אלבומים לפי ה-userId
       const response = await api.get(`/albums?userId=${userId}`);
       setAlbums(response.data);
     } catch (err) {
@@ -29,7 +28,7 @@ export default function Albums() {
 
     try {
       const response = await api.post('/albums', {
-        userId: parseInt(userId),
+        userId: userId,
         title: newAlbumTitle
       });
       setAlbums([...albums, response.data]);

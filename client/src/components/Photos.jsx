@@ -22,11 +22,10 @@ export default function Photos() {
 
  const fetchPhotos = async (pageNumber) => {
     try {
-      // עדכון ל-_per_page במקום _limit כדי שיתאים לגרסה החדשה של השרת
       const response = await api.get(`/photos?albumId=${albumId}&_page=${pageNumber}&_per_page=${limit}`);
       
-      // החלק הקריטי: שליפת המערך מתוך האובייקט (אם השרת עטף אותו) או שימוש בו ישירות
-      const newPhotos = response.data.data ? response.data.data : response.data;
+      // json-server v1 pagination returns an object with a 'data' array property
+      const newPhotos = response.data.data || response.data;
       
       if (pageNumber === 1) {
         setPhotos(newPhotos);
@@ -59,7 +58,7 @@ export default function Photos() {
       const imageUrl = `/images/food${randomImageIndex}.jpg`;
 
       const response = await api.post('/photos', {
-        albumId: parseInt(albumId),
+        albumId: albumId,
         title: newPhotoTitle,
         url: imageUrl,
         thumbnailUrl: imageUrl
